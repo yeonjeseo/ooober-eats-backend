@@ -5,6 +5,7 @@ import {RestaurantsModule} from "./restaurants/restaurants.module";
 import {TypeOrmModule} from "@nestjs/typeorm";
 import {ConfigModule} from "@nestjs/config";
 import * as Joi from 'joi'
+import {Restaurant} from "./restaurants/entities/restanrant.entity";
 /**
  * forRoot?
  */
@@ -22,7 +23,8 @@ import * as Joi from 'joi'
           DB_USERNAME: Joi.string().required(),
           DB_PASSWORD: Joi.string().required(),
           DB_DATABASE: Joi.string().required(),
-        })
+        }),
+
       }),GraphQLModule.forRoot({
     driver: ApolloDriver,
     autoSchemaFile: true,
@@ -35,7 +37,7 @@ import * as Joi from 'joi'
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    entities: [],
+    entities: [Restaurant],
     synchronize: true,  // DB를 현재 모듈 상태로 동기화
     logging: true,
   })],
