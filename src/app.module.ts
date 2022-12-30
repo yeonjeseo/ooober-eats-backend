@@ -38,7 +38,7 @@ import {Restaurant} from "./restaurants/entities/restanrant.entity";
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     entities: [Restaurant],
-    synchronize: true,  // DB를 현재 모듈 상태로 동기화
+    synchronize: process.env.Node_ENV !== 'prod',  // DB를 현재 모듈 상태로 동기화
     logging: true,
   })],
   controllers: [],
