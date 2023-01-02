@@ -4,6 +4,7 @@ import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
 import { RestaurantService } from './restaurants.service';
 import {boolean} from "joi";
 import {UpdateRestaurantDto} from "./dtos/update-restaurant.dto";
+import {LoginOutput} from "../users/dtos/login.dto";
 
 @Resolver((of) => Restaurant)
 export class RestaurantResolver {
@@ -36,16 +37,21 @@ export class RestaurantResolver {
     }
   }
 
-  @Mutation(returns => Boolean)
+  @Mutation(returns => LoginOutput)
   async updateRestaurant (
       @Args('input') updateRestaurantDto : UpdateRestaurantDto
-    ): Promise<boolean> {
+    ): Promise<LoginOutput> {
     try {
       await this.restaurantService.updateRestaurant(updateRestaurantDto)
-      return true;
+      return {
+        ok: true
+      };
     }catch (e) {
       console.log(e);
-      return false;
+      return {
+        ok: false,
+        error: e
+      };
     }
   }
 }
