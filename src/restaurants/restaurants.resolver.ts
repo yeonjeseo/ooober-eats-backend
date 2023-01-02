@@ -1,25 +1,36 @@
-import {Resolver, Query, Args, Mutation} from "@nestjs/graphql";
-import {Restaurant} from "./entities/restanrant.entity";
-import {CreateRestaurantDto} from "./dtos/create-restaurant.dto";
-import {RestaurantsService} from "./restaurants.service";
+import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Restaurant } from './entities/restanrant.entity';
+import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
+import { RestaurantService } from './restaurants.service';
 
-@Resolver(of => Restaurant)
+@Resolver((of) => Restaurant)
 export class RestaurantResolver {
-    constructor(private readonly restaurantService: RestaurantsService) {
-    }
+  /**
+   * @param restaurantService
+   * Dependency Injection
+   * 의존성 주입할 객체는 provider에서 추가되어야 함.
+   *
+   */
 
-    /**
-     * query 데코레이터는 타입을 리턴하는 함수를 매개변수로 넣어야 함.
-     * graphql schema와 typescript에서  배열 리턴 표현 방법이 다름
-     */
-    @Query(returns => [Restaurant])
-    restaurants(): Promise<Restaurant[]> {
-        return this.restaurantService.getAll();
-    }
+  constructor(private readonly restaurantService: RestaurantService) {}
 
-    @Mutation(returns => Boolean)
-    createRestaurant(@Args() CreateRestaurantDto: CreateRestaurantDto) {
-        console.log(CreateRestaurantDto)
-        return true
+  /**
+   * query 데코레이터는 타입을 리턴하는 함수를 매개변수로 넣어야 함.
+   * graphql schema와 typescript에서  배열 리턴 표현 방법이 다름
+   */
+  @Query((returns) => [Restaurant])
+  restaurants(): Promise<Restaurant[]> {
+    return this.restaurantService.getAll();
+  }
+
+  @Mutation((returns) => Boolean)
+  async createRestaurant(@Args('input') CreateRestaurantDto: CreateRestaurantDto): Promise<boolean> {
+    try {
+      await this.restaurantService.createRestaurant(CreateRestaurantDto)
+      return true;
+    }catch (e) {
+      console.log(e)
+      return false;
     }
+  }
 }

@@ -3,8 +3,8 @@
  * 우리 데이터베이스 모델
  */
 
-import {Field, ObjectType} from "@nestjs/graphql";
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import { Field, ObjectType } from '@nestjs/graphql';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  * Most of the definitions in a GraphQL schema are object types.
@@ -15,30 +15,34 @@ import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 /**
  * 하나의 클래스를 ObjectType, Entity 사용할 수 있다,
  */
+
+/**
+ * Mappped Types - 베이스 타입을 바탕으로 다른 버전을 만들 수 있다.
+ */
 @ObjectType()
 @Entity()
 export class Restaurant {
-    @PrimaryGeneratedColumn()
-    @Field(is => Number)
-    id: number
+  @PrimaryGeneratedColumn()
+  @Field((is) => Number)
+  id: number;
 
-    @Field(is => String)
-    @Column()
-    name: string;
+  @Field((is) => String)
+  @Column()
+  name: string;
 
-    @Field(is => Boolean)
-    @Column()
-    isVegan: boolean;
+  @Field((is) => Boolean)
+  @Column()
+  isVegan: boolean;
 
-    @Field(type => String)
-    @Column()
-    address: string;
+  @Field((type) => String)
+  @Column()
+  address: string;
 
-    @Field(type => String)
-    @Column()
-    ownersName: string;
+  @Field((type) => String)
+  @Column()
+  ownersName: string;
 
-    @Field(is => String)
-    @Column()
-    categoryName: string;
+  @Field((is) => String)
+  @Column()
+  categoryName: string;
 }
