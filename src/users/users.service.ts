@@ -17,7 +17,6 @@ export class UsersService {
                 private readonly config: ConfigService,
                 private readonly jwtService: JwtService
     ) {
-        console.log(this.jwtService.hello())
     }
 
     async createAccount({email, password, role}: CreateAccountInput): Promise<CreateAccountOutput> {
@@ -68,7 +67,7 @@ export class UsersService {
              */
             return {
                 ok: true,
-                token: jwt.sign({id: user.id}, this.config.get('JWT_SECRET'))
+                token: this.jwtService.sign(user.id)
             }
         }catch (e) {
             return {
