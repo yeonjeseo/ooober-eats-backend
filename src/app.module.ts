@@ -18,7 +18,7 @@ import {User} from "./users/entities/users.entity";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
+      envFilePath: process.env.NODE_ENV === 'dev' ? '.dev.env' : '.test.env',
       ignoreEnvFile: process.env.Node_ENV === 'prod',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().required().valid('dev', 'test', 'prod'),
@@ -27,6 +27,7 @@ import {User} from "./users/entities/users.entity";
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
+        JWT_SECRET: Joi.string().required()
       }),
     }),
     GraphQLModule.forRoot({
