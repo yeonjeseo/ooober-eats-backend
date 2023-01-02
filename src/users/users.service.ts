@@ -4,11 +4,20 @@ import {User} from "./entities/users.entity";
 import {Injectable, InternalServerErrorException} from "@nestjs/common";
 import {CreateAccountInput, CreateAccountOutput} from "./dtos/create-account.dto";
 import {LoginInput, LoginOutput} from "./dtos/login.dto";
-import * as bcrypt from 'bcrypt'
-
+// import * as bcrypt from 'bcrypt'
+import * as jwt from 'jsonwebtoken'
+import { ConfigService} from "@nestjs/config";
+import {JwtService} from "../jwt/jwt.service";
 @Injectable()
 export class UsersService {
-    constructor(@InjectRepository(User) private readonly users: Repository<User>) {}
+    /**
+     * Dependency Injection
+     */
+    constructor(@InjectRepository(User) private readonly users: Repository<User>,
+                private readonly config: ConfigService,
+                private readonly jwtService: JwtService
+    ) {
+    }
 
     async createAccount({email, password, role}: CreateAccountInput): Promise<CreateAccountOutput> {
         try {
@@ -51,9 +60,14 @@ export class UsersService {
                 error: 'Wrong password!'
             }
 
+            /**
+             * process.env를 사용하는 것이 아니라 Nest 적인 방법을 사용할 것
+             * users.module
+             *
+             */
             return {
                 ok: true,
-                token: 'asdkjaksjdlakj'
+                token: this.jwtService.sign(user.id)
             }
         }catch (e) {
             return {
