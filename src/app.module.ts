@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver } from '@nestjs/apollo';
-import { RestaurantsModule } from './restaurants/restaurants.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import {MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
+import {GraphQLModule} from '@nestjs/graphql';
+import {ApolloDriver} from '@nestjs/apollo';
+import {TypeOrmModule} from '@nestjs/typeorm';
+import {ConfigModule} from '@nestjs/config';
 import * as Joi from 'joi';
-import { Restaurant } from './restaurants/entities/restanrant.entity';
-import { UsersModule } from './users/users.module';
-import { CommonModule } from './common/common.module';
+import {UsersModule} from './users/users.module';
+import {CommonModule} from './common/common.module';
 import {User} from "./users/entities/users.entity";
-import { JwtModule } from './jwt/jwt.module';
+import {JwtModule} from './jwt/jwt.module';
+import {jwtMiddleware} from "./jwt/jwt.middleware";
+
 /**
  * forRoot?
  *  TypeORM module 안에 Restaurant라 하는 Entity를 가지고 있음
@@ -55,4 +55,14 @@ import { JwtModule } from './jwt/jwt.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(jwtMiddleware).forRoutes({
+      path: '/graphql', // graphql과 그 하위 경로에
+      // path: '*', // 모든 경로에 (wild card)
+      method: RequestMethod.POST  // POST method인 경우에만 적용시킴
+      // method: RequestMethod.ALL  // 모든 Method 에 대해 적용
+    });
+  }
+}
