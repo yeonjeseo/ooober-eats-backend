@@ -48,7 +48,9 @@ import { JwtModule } from './jwt/jwt.module';
     }),
     UsersModule,
     CommonModule,
-    JwtModule.forRoot(),
+    JwtModule.forRoot({
+      privateKey: process.env.JWT_SECRET
+    }),
   ],
   controllers: [],
   providers: [],

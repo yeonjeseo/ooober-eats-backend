@@ -6,7 +6,7 @@ import {CreateAccountInput, CreateAccountOutput} from "./dtos/create-account.dto
 import {LoginInput, LoginOutput} from "./dtos/login.dto";
 // import * as bcrypt from 'bcrypt'
 import * as jwt from 'jsonwebtoken'
-import {ConfigModule, ConfigService} from "@nestjs/config";
+import { ConfigService} from "@nestjs/config";
 import {JwtService} from "../jwt/jwt.service";
 @Injectable()
 export class UsersService {
