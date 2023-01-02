@@ -9,6 +9,7 @@ import { Restaurant } from './restaurants/entities/restanrant.entity';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import {User} from "./users/entities/users.entity";
+import { JwtModule } from './jwt/jwt.module';
 /**
  * forRoot?
  *  TypeORM module 안에 Restaurant라 하는 Entity를 가지고 있음
@@ -47,6 +48,7 @@ import {User} from "./users/entities/users.entity";
     }),
     UsersModule,
     CommonModule,
+    JwtModule,
   ],
   controllers: [],
   providers: [],

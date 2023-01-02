@@ -9,9 +9,11 @@ import * as jwt from 'jsonwebtoken'
 import {ConfigModule, ConfigService} from "@nestjs/config";
 @Injectable()
 export class UsersService {
+    /**
+     * Dependency Injection
+     */
     constructor(@InjectRepository(User) private readonly users: Repository<User>,
                 private readonly config: ConfigService) {
-        console.log(this.config.get('JWT_SECRET'))
     }
 
     async createAccount({email, password, role}: CreateAccountInput): Promise<CreateAccountOutput> {
