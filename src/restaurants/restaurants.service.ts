@@ -3,6 +3,7 @@ import { Restaurant } from './entities/restanrant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
+import {UpdateRestaurantDto} from "./dtos/update-restaurant.dto";
 
 /**
  * RrestaurantService를 RestaurantResolvers에 Inject
@@ -13,9 +14,11 @@ export class RestaurantService {
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
   ) {}
+
   getAll(): Promise<Restaurant[]> {
     return this.restaurants.find();
   }
+
   createRestaurant(
     createRestaurantDto: CreateRestaurantDto,
   ): Promise<Restaurant> {
@@ -23,4 +26,10 @@ export class RestaurantService {
     const newRestaurant =  this.restaurants.create(createRestaurantDto);
     return this.restaurants.save(newRestaurant)
   }
+
+  updateRestaurant( updateRestaurantDto: UpdateRestaurantDto): Promise<Restaurant> {
+    const updatedRestaurant =  this.restaurants.update(updateRestaurantDto.id, updateRestaurantDto.data);
+    return this.restaurants.save(updatedRestaurant)
+  }
+
 }
