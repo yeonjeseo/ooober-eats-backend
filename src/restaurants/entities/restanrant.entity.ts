@@ -5,7 +5,7 @@
 
 import {Field, InputType, ObjectType} from '@nestjs/graphql';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import {IsBoolean, IsString, Length} from "class-validator";
+import {IsBoolean, IsOptional, IsString, Length} from "class-validator";
 
 /**
  * Most of the definitions in a GraphQL schema are object types.
@@ -34,12 +34,15 @@ export class Restaurant {
   @Length(5)
   name: string;
 
-  @Field((is) => Boolean)
-  @Column()
+  // 각각의 데코레이터가 알아먹을 수 있도록 적절한 옵션 추가해서 Default value 설정
+  // graphql -> Nullable, defaultValue
+  @Field((is) => Boolean, {nullable: true})
+  @Column({default: true})
   @IsBoolean()
+  @IsOptional()
   isVegan: boolean;
 
-  @Field((type) => String)
+  @Field((type) => String, {defaultValue: '경북 문경시 모전동 신원아침도시'})
   @Column()
   @IsString()
   address: string;
