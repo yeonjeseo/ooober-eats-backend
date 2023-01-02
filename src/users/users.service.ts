@@ -7,13 +7,17 @@ import {LoginInput, LoginOutput} from "./dtos/login.dto";
 // import * as bcrypt from 'bcrypt'
 import * as jwt from 'jsonwebtoken'
 import {ConfigModule, ConfigService} from "@nestjs/config";
+import {JwtService} from "../jwt/jwt.service";
 @Injectable()
 export class UsersService {
     /**
      * Dependency Injection
      */
     constructor(@InjectRepository(User) private readonly users: Repository<User>,
-                private readonly config: ConfigService) {
+                private readonly config: ConfigService,
+                private readonly jwtService: JwtService
+    ) {
+        console.log(this.jwtService.hello())
     }
 
     async createAccount({email, password, role}: CreateAccountInput): Promise<CreateAccountOutput> {
