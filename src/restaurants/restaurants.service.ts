@@ -27,9 +27,9 @@ export class RestaurantService {
     return this.restaurants.save(newRestaurant)
   }
 
-  updateRestaurant( updateRestaurantDto: UpdateRestaurantDto): Promise<Restaurant> {
-    const updatedRestaurant =  this.restaurants.update(updateRestaurantDto.id, updateRestaurantDto.data);
-    return this.restaurants.save(updatedRestaurant)
+  updateRestaurant({id, data}: UpdateRestaurantDto): Promise<any> {
+    // DB에 레코드가 존재하는지 확인하지 않
+    return this.restaurants.update(id, {...data});
   }
 
 }
