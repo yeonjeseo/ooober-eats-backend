@@ -1,6 +1,5 @@
-import {InputType, Field, ArgsType, OmitType} from '@nestjs/graphql';
-import { IsBoolean, IsString, Length } from 'class-validator';
-import {Restaurant} from "../entities/restanrant.entity";
+import { InputType, OmitType } from '@nestjs/graphql';
+import { Restaurant } from '../entities/restanrant.entity';
 
 /**
  * InputType은 alias가 필수임 대신 argsType을 사용하면 별ㅊ핑 없이 입력 받을 수 있음
@@ -37,4 +36,8 @@ import {Restaurant} from "../entities/restanrant.entity";
  * MappedTypes의  마지막  매개변수로 변환하고자 하는 데코레이터로 변환 가능
  */
 @InputType()
-export class CreateRestaurantDto extends OmitType(Restaurant, ["id"], InputType ) {}
+export class CreateRestaurantDto extends OmitType(
+  Restaurant,
+  ['id'],
+  InputType,
+) {}

@@ -1,14 +1,20 @@
-import {MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
-import {GraphQLModule} from '@nestjs/graphql';
-import {ApolloDriver} from '@nestjs/apollo';
-import {TypeOrmModule} from '@nestjs/typeorm';
-import {ConfigModule} from '@nestjs/config';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver } from '@nestjs/apollo';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import {UsersModule} from './users/users.module';
-import {CommonModule} from './common/common.module';
-import {User} from "./users/entities/users.entity";
-import {JwtModule} from './jwt/jwt.module';
-import {jwtMiddleware} from "./jwt/jwt.middleware";
+import { UsersModule } from './users/users.module';
+import { CommonModule } from './common/common.module';
+import { User } from './users/entities/users.entity';
+import { JwtModule } from './jwt/jwt.module';
+import { jwtMiddleware } from './jwt/jwt.middleware';
+import { AuthModule } from './auth/auth.module';
 
 /**
  * forRoot?
@@ -28,12 +34,19 @@ import {jwtMiddleware} from "./jwt/jwt.middleware";
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
-        JWT_SECRET: Joi.string().required()
+        JWT_SECRET: Joi.string().required(),
       }),
     }),
+
+    /**
+     * Apollo Server 나 Graphql context 는 모든 resolver에 정보를 보낼 수 있는 Property
+     * 모든 request에 대해서 context binding이 이뤄짐
+     * context 속성의 함수 매개변수는 request
+     */
     GraphQLModule.forRoot({
       driver: ApolloDriver,
       autoSchemaFile: true,
+      context: ({ req }) => ({ user: req['user'] }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -47,21 +60,20 @@ import {jwtMiddleware} from "./jwt/jwt.middleware";
       logging: true,
     }),
     UsersModule,
-    CommonModule,
     JwtModule.forRoot({
-      privateKey: process.env.JWT_SECRET
+      privateKey: process.env.JWT_SECRET,
     }),
+    AuthModule,
   ],
   controllers: [],
   providers: [],
 })
-
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(jwtMiddleware).forRoutes({
       path: '/graphql', // graphql과 그 하위 경로에
       // path: '*', // 모든 경로에 (wild card)
-      method: RequestMethod.POST  // POST method인 경우에만 적용시킴
+      method: RequestMethod.ALL, // POST method인 경우에만 적용시킴
       // method: RequestMethod.ALL  // 모든 Method 에 대해 적용
     });
   }
