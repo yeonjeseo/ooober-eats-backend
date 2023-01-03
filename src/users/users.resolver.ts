@@ -6,6 +6,7 @@ import {CreateAccountInput, CreateAccountOutput} from "./dtos/create-account.dto
 import {LoginInput, LoginOutput} from "./dtos/login.dto";
 import {UseGuards} from "@nestjs/common";
 import {AuthGuard} from "../auth/auth.guard";
+import {AuthUser} from "../auth/auth-user.decorator";
 
 @Resolver(of => User)
 export class UsersResolver {
@@ -39,8 +40,10 @@ export class UsersResolver {
 
     @Query(returns => User)
     @UseGuards(AuthGuard)
-    me(@Context() context) {
+    me(@AuthUser() authUser: User) {
         try {
+            console.log(authUser)
+            return authUser
         }catch (e) {
         }
     }
