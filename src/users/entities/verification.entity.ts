@@ -18,7 +18,7 @@ export class Verification extends CoreEntity {
    * @JoinColum 접근 방향에 따라 데코레이터의 위치가 바뀜
    */
 
-  @OneToOne((type) => User)
+  @OneToOne((type) => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 
