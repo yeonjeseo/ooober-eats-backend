@@ -10,8 +10,10 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 // import * as bcrypt from 'bcrypt'
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
-import { EditProfileInput } from './dtos/edit-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
+import { UserProfileOutput } from './dtos/user-profile.dto';
+import { VerifyEmailOutput } from './dtos/verify-eamil.dto';
 @Injectable()
 export class UsersService {
   /**
@@ -104,40 +106,60 @@ export class UsersService {
     }
   }
 
-  findById(id: number): Promise<User> {
-    return this.users.findOne({ where: { id } });
+  async findById(id: number): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findOne({ where: { id } });
+      if (!user) throw Error();
+      return {
+        ok: Boolean(user),
+        user,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        error,
+      };
+    }
   }
 
   async editProfile(
     userId: number,
     { email, password }: EditProfileInput,
-  ): Promise<User> {
-    // return this.users.update({ id: userId }, { ...editProfileInput });
-    const user = await this.users.findOne({ where: { id: userId } });
-    if (email) {
-      user.email = email;
-      user.verified = false;
-      await this.verifications.save(this.verifications.create({ user }));
+  ): Promise<EditProfileOutput> {
+    try {
+      // return this.users.update({ id: userId }, { ...editProfileInput });
+      const user = await this.users.findOne({ where: { id: userId } });
+      if (email) {
+        user.email = email;
+        user.verified = false;
+        await this.verifications.save(this.verifications.create({ user }));
+      }
+      if (password) user.password = password;
+      await this.users.save(user);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return { ok: false, error };
     }
-    if (password) user.password = password;
-    return this.users.save(user);
   }
 
-  async verifyEmail(code: string): Promise<boolean> {
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
     try {
       const verification = await this.verifications.findOne({
         where: { code },
         relations: ['user'],
       });
-      if (verification) {
-        verification.user.verified = true;
-        console.log(verification.user);
-        await this.users.save(verification.user);
-        return true;
-      }
-      throw Error();
-    } catch (e) {
-      return false;
+      if (!verification) throw Error();
+
+      verification.user.verified = true;
+      await this.users.save(verification.user);
+
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error };
     }
   }
 }
