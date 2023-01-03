@@ -15,6 +15,7 @@ import { User } from './users/entities/users.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { jwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
+import { Verification } from './users/entities/verification.entity';
 
 /**
  * forRoot?
@@ -55,7 +56,7 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User],
+      entities: [User, Verification],
       synchronize: process.env.Node_ENV !== 'prod', // DB를 현재 모듈 상태로 동기화
       logging: true,
     }),

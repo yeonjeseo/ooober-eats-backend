@@ -35,6 +35,10 @@ export class User extends CoreEntity {
   @IsEnum(UserRole)
   role: UserRole;
 
+  @Column({ default: false })
+  @Field((type) => Boolean)
+  emailVerified: boolean;
+
   /**
    * Entity Listener
    * "특정 Entity event 를 Listen 하는 사용자 로직이 있는 method 를 가질 수 있다.
@@ -43,7 +47,6 @@ export class User extends CoreEntity {
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
     try {
-      console.log('Hello world!');
       this.password = await bcrypt.hash(this.password, 10);
     } catch (e) {
       console.log(e);
