@@ -11,6 +11,7 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
 import { EditProfileInput } from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
 @Injectable()
 export class UsersService {
   /**
@@ -18,7 +19,8 @@ export class UsersService {
    */
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    private readonly config: ConfigService,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -40,7 +42,20 @@ export class UsersService {
           error: 'There is a user with that email already',
         };
       }
-      await this.users.save(this.users.create({ email, password, role }));
+
+      const user = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+
+      await this.verifications.save(
+        this.verifications.create({
+          user,
+        }),
+      );
+
+      return {
+        ok: true,
+      };
     } catch (e) {
       console.log(e);
       return {
@@ -96,7 +111,11 @@ export class UsersService {
   ): Promise<User> {
     // return this.users.update({ id: userId }, { ...editProfileInput });
     const user = await this.users.findOne({ where: { id: userId } });
-    if (email) user.email = email;
+    if (email) {
+      user.email = email;
+      user.verified = false;
+      await this.verifications.save(this.verifications.create({ user }));
+    }
     if (password) user.password = password;
     return this.users.save(user);
   }

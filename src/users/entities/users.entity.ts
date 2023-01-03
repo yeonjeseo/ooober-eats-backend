@@ -37,7 +37,7 @@ export class User extends CoreEntity {
 
   @Column({ default: false })
   @Field((type) => Boolean)
-  emailVerified: boolean;
+  verified: boolean;
 
   /**
    * Entity Listener
