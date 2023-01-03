@@ -10,6 +10,7 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 // import * as bcrypt from 'bcrypt'
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
+import { EditProfileInput } from './dtos/edit-profile.dto';
 @Injectable()
 export class UsersService {
   /**
@@ -87,5 +88,9 @@ export class UsersService {
 
   findById(id: number): Promise<User> {
     return this.users.findOne({ where: { id } });
+  }
+
+  async editProfile(userId: number, { email, password }: EditProfileInput) {
+    return this.users.update({ id: userId }, { email, password });
   }
 }
