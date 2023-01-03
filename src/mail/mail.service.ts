@@ -8,9 +8,7 @@ import * as FormData from 'form-data';
 export class MailService {
   constructor(
     @Inject(CONFIG_OPTIONS) private readonly options: MailModuleOptions,
-  ) {
-    this.sendEmail('test', 'test');
-  }
+  ) {}
 
   /*
   curl -s --user 'api:YOUR_API_KEY' \
@@ -21,14 +19,18 @@ export class MailService {
 	-F subject='Hello' \
 	-F text='Testing some Mailgun awesomeness!'
    */
-  private async sendEmail(subject: string, content: string, to?: string) {
+  private async sendEmail(subject: string, template: string) {
     const form = new FormData();
 
-    form.append('from', `Excited User <mailgun@${this.options.fromEmail}>`);
-    form.append('to', 'yeonjeseo@hotmail.com');
+    form.append('from', `Excited User <mailgun@${this.options.emailDomain}>`);
+    form.append('to', 'goatyeonje@gmail.com');
     form.append('subject', subject);
-    form.append('text', content);
+    form.append('template', template);
+    form.append('v:code', 'asdasd');
+    form.append('v:username', 'yeonjeseo');
 
+    //YXBpOjMwMWI0ODY5NGQ0Mjc5YjBiMWQ2MDc2ZDI2ZWNjZTFjLWNjOWIyZDA0LTYxZWI4YTlm
+    console.log(this.options);
     try {
       const response = await got(
         `https://api.mailgun.net/v3/${this.options.emailDomain}/messages`,
@@ -42,6 +44,7 @@ export class MailService {
           body: form,
         },
       );
+      console.log(response.body);
     } catch (e) {
       console.log(e);
     }
