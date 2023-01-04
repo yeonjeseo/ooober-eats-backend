@@ -61,7 +61,6 @@ export class UsersService {
         ok: true,
       };
     } catch (e) {
-      console.log(e);
       return {
         ok: false,
         error: "Couldn't created account",
@@ -85,7 +84,6 @@ export class UsersService {
         };
 
       const passwordCorrect = await user.checkPassword(password);
-      console.log(passwordCorrect);
       if (!passwordCorrect)
         return {
           ok: false,
@@ -120,7 +118,6 @@ export class UsersService {
         user,
       };
     } catch (error) {
-      console.log(error);
       return {
         ok: false,
         error,
@@ -160,7 +157,12 @@ export class UsersService {
         where: { code },
         relations: ['user'],
       });
-      if (!verification) throw Error();
+
+      if (!verification)
+        return {
+          ok: false,
+          error: 'Verification not found!',
+        };
 
       verification.user.verified = true;
       await this.users.save(verification.user);
@@ -168,7 +170,7 @@ export class UsersService {
 
       return { ok: true };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: 'Could not verify email.' };
     }
   }
 }
