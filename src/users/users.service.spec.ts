@@ -241,7 +241,9 @@ describe('UserService', () => {
       expect(result).toHaveProperty('ok', false);
     });
   });
-  it.todo('findById');
+
+  //  it.todo('findById');
+  describe('findById', () => {});
   it.todo('editProfile');
   it.todo('verifyEmail');
 });

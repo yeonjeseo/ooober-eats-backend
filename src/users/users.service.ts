@@ -113,8 +113,8 @@ export class UsersService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const user = await this.users.findOne({ where: { id } });
-      if (!user) throw Error();
+      // findOneOrFail: TypeORM 에서 제공. 레코드 없을 경우 throw
+      const user = await this.users.findOneOrFail({ where: { id } });
       return {
         ok: Boolean(user),
         user,
