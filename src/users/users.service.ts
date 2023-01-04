@@ -10,6 +10,11 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 // import * as bcrypt from 'bcrypt'
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
+import { UserProfileOutput } from './dtos/user-profile.dto';
+import { VerifyEmailOutput } from './dtos/verify-eamil.dto';
+import { MailService } from '../mail/mail.service';
 @Injectable()
 export class UsersService {
   /**
@@ -17,8 +22,10 @@ export class UsersService {
    */
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    private readonly config: ConfigService,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async createAccount({
@@ -30,7 +37,6 @@ export class UsersService {
       // check if email exist
       // hash password & create user
       const exists = await this.users.findOne({ where: { email } });
-
       // const exists = await this.users.findOne({email})
       if (exists) {
         // make error
@@ -39,7 +45,22 @@ export class UsersService {
           error: 'There is a user with that email already',
         };
       }
-      await this.users.save(this.users.create({ email, password, role }));
+
+      const user = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+
+      const verification = await this.verifications.save(
+        this.verifications.create({
+          user,
+        }),
+      );
+
+      this.mailService.sendVerificationEmail(user.email, verification.code);
+
+      return {
+        ok: true,
+      };
     } catch (e) {
       console.log(e);
       return {
@@ -54,7 +75,10 @@ export class UsersService {
       // find the user with the email
       // check if the password is correct
       // make a JWT and git it to the user
-      const user = await this.users.findOne({ where: { email } });
+      const user = await this.users.findOne({
+        where: { email },
+        select: ['password', 'id'],
+      });
       if (!user)
         return {
           ok: false,
@@ -85,7 +109,64 @@ export class UsersService {
     }
   }
 
-  findById(id: number): Promise<User> {
-    return this.users.findOne({ where: { id } });
+  async findById(id: number): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findOne({ where: { id } });
+      if (!user) throw Error();
+      return {
+        ok: Boolean(user),
+        user,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async editProfile(
+    userId: number,
+    { email, password }: EditProfileInput,
+  ): Promise<EditProfileOutput> {
+    try {
+      // return this.users.update({ id: userId }, { ...editProfileInput });
+      const user = await this.users.findOne({ where: { id: userId } });
+      if (email) {
+        user.email = email;
+        user.verified = false;
+        const verification = await this.verifications.save(
+          this.verifications.create({ user }),
+        );
+        this.mailService.sendVerificationEmail(user.email, verification.code);
+      }
+      if (password) user.password = password;
+      await this.users.save(user);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return { ok: false, error };
+    }
+  }
+
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
+    try {
+      const verification = await this.verifications.findOne({
+        where: { code },
+        relations: ['user'],
+      });
+      if (!verification) throw Error();
+
+      verification.user.verified = true;
+      await this.users.save(verification.user);
+      await this.verifications.delete(verification.id);
+
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error };
+    }
   }
 }
