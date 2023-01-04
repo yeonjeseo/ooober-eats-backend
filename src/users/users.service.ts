@@ -85,6 +85,7 @@ export class UsersService {
         };
 
       const passwordCorrect = await user.checkPassword(password);
+      console.log(passwordCorrect);
       if (!passwordCorrect)
         return {
           ok: false,

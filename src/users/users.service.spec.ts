@@ -18,7 +18,7 @@ const mockRepository = () => ({
 });
 
 const mockJwtService = {
-  sign: jest.fn(),
+  sign: jest.fn(() => 'lalalalala'),
   verify: jest.fn(),
 };
 
@@ -38,11 +38,15 @@ describe('UserService', () => {
   let usersRepository: MockRepository<User>;
   let verificationsRepository: MockRepository<Verification>;
   let mailService: MailService;
+  let jwtService: JwtService;
+
   /**
    * 모든 테스트 케이스에 대해 테스트 모듈 생성
    * Mock Repository
+   * beforeAll -> beforeEach 로 변경
+   *
    */
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -66,6 +70,7 @@ describe('UserService', () => {
     }).compile();
     service = module.get<UsersService>(UsersService);
     mailService = module.get<MailService>(MailService);
+    jwtService = module.get<JwtService>(JwtService);
     usersRepository = module.get(getRepositoryToken(User));
     verificationsRepository = module.get(getRepositoryToken(Verification));
   });
@@ -165,7 +170,7 @@ describe('UserService', () => {
     });
   });
 
-  it.todo('login');
+  // it.todo('login');
   describe('login', () => {
     const loginArgs = {
       email: 'bs@email',
@@ -175,15 +180,65 @@ describe('UserService', () => {
       usersRepository.findOne.mockResolvedValue(null);
 
       const result = await service.login(loginArgs);
+      /**
+       * 테스트 실패
+       * usersRepository를 모든 테스트 케이스에 대해 공유하고 있기 때문에, 위의 테스트에서 호출한 횟수도 포함되고 있음.
+       */
       expect(usersRepository.findOne).toBeCalledTimes(1);
-      expect(usersRepository.findOne).toBeCalledWith(
-        expect.any(Object),
-        expect.any(Object),
-      );
+      expect(usersRepository.findOne).toBeCalledWith(expect.any(Object));
       expect(result).toEqual({
         ok: false,
         error: 'User not found',
       });
+    });
+
+    it('should fail if password not matches', async () => {
+      /**
+       * users.findOne 은 id 와 CheckPassword method 가 포함되어있는 User object 를 리턴해야 함.
+       */
+      const mockedUser = {
+        id: 1,
+        /**
+         * mock function 의 implement(구현) 또한 가능함.
+         * checkPassword 는 jest mock function 인데, resolve 결과로 false 를 반환하는 Promise 를 반환한다.
+         */
+        checkPassword: jest.fn(() => Promise.resolve(false)),
+      };
+      usersRepository.findOne.mockResolvedValue(mockedUser);
+
+      const result = await service.login(loginArgs);
+
+      expect(usersRepository.findOne).toBeCalledTimes(1);
+      expect(mockedUser.checkPassword).toBeCalledTimes(1);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Wrong password!',
+      });
+    });
+
+    it('should return jwt token if password matches', async () => {
+      const mockedUser = {
+        id: 10,
+        checkPassword: jest.fn(() => Promise.resolve(true)),
+      };
+      usersRepository.findOne.mockResolvedValue(mockedUser);
+
+      const result = await service.login(loginArgs);
+      expect(jwtService.sign).toBeCalledTimes(1);
+      expect(jwtService.sign).toBeCalledWith(expect.any(Number));
+      expect(result).toEqual({ ok: true, token: 'lalalalala' });
+    });
+
+    it('should fail on exception', async () => {
+      const mockedUser = {
+        id: 1,
+        checkPassword: jest.fn(() => Promise.reject(new Error(':('))),
+      };
+      usersRepository.findOne.mockResolvedValue(mockedUser);
+
+      const result = await service.login(loginArgs);
+      expect(mockedUser.checkPassword).toBeCalledTimes(1);
+      expect(result).toHaveProperty('ok', false);
     });
   });
   it.todo('findById');
