@@ -6,13 +6,16 @@ import { Verification } from './entities/verification.entity';
 import { JwtService } from '../jwt/jwt.service';
 import { MailService } from '../mail/mail.service';
 import { Repository } from 'typeorm';
-import { response } from 'express';
 
-const mockRepository = {
+/**
+ * Jest는 userRepository.create 와 validationRepository.create 가 같다고 생각함
+ * 함수로 만들어 useValue의 스코프 분리?
+ */
+const mockRepository = () => ({
   findOne: jest.fn(),
   save: jest.fn(),
   create: jest.fn(),
-};
+});
 
 const mockJwtService = {
   sign: jest.fn(),
@@ -44,11 +47,11 @@ describe('UserService', () => {
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockRepository,
+          useValue: mockRepository(),
         },
         {
           provide: getRepositoryToken(Verification),
-          useValue: mockRepository,
+          useValue: mockRepository(),
         },
         {
           provide: JwtService,
@@ -77,6 +80,11 @@ describe('UserService', () => {
    */
   // it.todo('createAccount');
   describe('createAccount', () => {
+    const createAccountArgs = {
+      email: '',
+      password: '',
+      role: 0,
+    };
     /**
      * 모든걸 가짜로 하고 있는데 유저가 있다고 어떻게 할 수 있을까
      * mock은 함수의 반환값을 속일 수 있다.
@@ -92,16 +100,24 @@ describe('UserService', () => {
         email: 'lalalalalala',
       });
 
-      const result = await service.createAccount({
-        email: '',
-        password: '',
-        role: 0,
-      });
+      const result = await service.createAccount(createAccountArgs);
 
       expect(result).toMatchObject({
         ok: false,
         error: 'There is a user with that email already',
       });
+    });
+
+    it('should create a new user', async () => {
+      usersRepository.findOne.mockResolvedValue(undefined);
+      usersRepository.create.mockReturnValue(createAccountArgs);
+
+      await service.createAccount(createAccountArgs);
+
+      expect(usersRepository.create).toHaveBeenCalledTimes(1);
+      expect(usersRepository.create).toHaveBeenCalledWith(createAccountArgs); // 메서드 호출에 어떤 매개변수를 전달하는지??
+      expect(usersRepository.save).toHaveBeenCalledTimes(1);
+      expect(usersRepository.save).toHaveBeenCalledWith(createAccountArgs); // 메서드 호출에 어떤 매개변수를 전달하는지??
     });
   });
   it.todo('login');
