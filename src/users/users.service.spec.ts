@@ -36,7 +36,8 @@ type MockRepository<T = any> = Partial<
 describe('UserService', () => {
   let service: UsersService;
   let usersRepository: MockRepository<User>;
-
+  let verificationsRepository: MockRepository<Verification>;
+  let mailService: MailService;
   /**
    * 모든 테스트 케이스에 대해 테스트 모듈 생성
    * Mock Repository
@@ -64,7 +65,9 @@ describe('UserService', () => {
       ],
     }).compile();
     service = module.get<UsersService>(UsersService);
+    mailService = module.get<MailService>(MailService);
     usersRepository = module.get(getRepositoryToken(User));
+    verificationsRepository = module.get(getRepositoryToken(Verification));
   });
 
   it('should be defined', () => {
@@ -109,18 +112,80 @@ describe('UserService', () => {
     });
 
     it('should create a new user', async () => {
+      /**
+       * 서비스 로직을 테스트 하기 위해 호출된 외부 함수, 매개변수는 모두 Mocking 시킴
+       * 오로지 서비스 로직 그 자체에만 테스트 집중
+       */
       usersRepository.findOne.mockResolvedValue(undefined);
       usersRepository.create.mockReturnValue(createAccountArgs);
+      usersRepository.save.mockResolvedValue(createAccountArgs);
 
-      await service.createAccount(createAccountArgs);
+      verificationsRepository.create.mockReturnValue({
+        user: createAccountArgs,
+      });
+      verificationsRepository.save.mockResolvedValue({ code: '123' });
+
+      const result = await service.createAccount(createAccountArgs);
 
       expect(usersRepository.create).toHaveBeenCalledTimes(1);
       expect(usersRepository.create).toHaveBeenCalledWith(createAccountArgs); // 메서드 호출에 어떤 매개변수를 전달하는지??
+
       expect(usersRepository.save).toHaveBeenCalledTimes(1);
       expect(usersRepository.save).toHaveBeenCalledWith(createAccountArgs); // 메서드 호출에 어떤 매개변수를 전달하는지??
+
+      expect(verificationsRepository.create).toHaveBeenCalledTimes(1);
+      expect(verificationsRepository.create).toHaveBeenCalledWith({
+        user: createAccountArgs,
+      }); // 메서드 호출에 어떤 매개변수를 전달하는지??
+
+      expect(verificationsRepository.save).toHaveBeenCalledTimes(1);
+      expect(verificationsRepository.save).toHaveBeenCalledWith({
+        user: createAccountArgs,
+      }); // 메서드 호출에 어떤 매개변수를 전달하는지??
+
+      expect(mailService.sendVerificationEmail).toHaveBeenCalledTimes(1);
+      // 함수, 메서드 호출 시 어떤 매개변수를 받는지 하나 하나 확인이 가능함.
+      expect(mailService.sendVerificationEmail).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+      );
+
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('should fail on exception', async () => {
+      usersRepository.findOne.mockRejectedValue(new Error());
+
+      const result = await service.createAccount(createAccountArgs);
+
+      expect(result).toEqual({
+        ok: false,
+        error: "Couldn't created account",
+      });
     });
   });
+
   it.todo('login');
+  describe('login', () => {
+    const loginArgs = {
+      email: 'bs@email',
+      password: 'paspssword',
+    };
+    it('should fail if user does not exist', async () => {
+      usersRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.login(loginArgs);
+      expect(usersRepository.findOne).toBeCalledTimes(1);
+      expect(usersRepository.findOne).toBeCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+      );
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+  });
   it.todo('findById');
   it.todo('editProfile');
   it.todo('verifyEmail');

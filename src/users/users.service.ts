@@ -55,7 +55,6 @@ export class UsersService {
           user,
         }),
       );
-
       this.mailService.sendVerificationEmail(user.email, verification.code);
 
       return {
@@ -97,9 +96,11 @@ export class UsersService {
        * users.module
        *
        */
+      const token = this.jwtService.sign(user.id);
+
       return {
         ok: true,
-        token: this.jwtService.sign(user.id),
+        token,
       };
     } catch (e) {
       return {
