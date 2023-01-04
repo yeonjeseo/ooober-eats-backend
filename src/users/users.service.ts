@@ -37,7 +37,6 @@ export class UsersService {
       // check if email exist
       // hash password & create user
       const exists = await this.users.findOne({ where: { email } });
-
       // const exists = await this.users.findOne({email})
       if (exists) {
         // make error

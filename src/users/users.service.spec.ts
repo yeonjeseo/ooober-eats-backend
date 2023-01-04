@@ -6,6 +6,7 @@ import { Verification } from './entities/verification.entity';
 import { JwtService } from '../jwt/jwt.service';
 import { MailService } from '../mail/mail.service';
 import { Repository } from 'typeorm';
+import { response } from 'express';
 
 const mockRepository = {
   findOne: jest.fn(),
@@ -22,6 +23,9 @@ const mockMailService = {
   sendVerificationEmail: jest.fn(),
 };
 
+/**
+ * User Repository 의 모든 메서드를 jest.Mock 타입으로 처리하기 위한 Partial type
+ */
 type MockRepository<T = any> = Partial<
   Record<keyof Repository<User>, jest.Mock>
 >;
@@ -73,7 +77,32 @@ describe('UserService', () => {
    */
   // it.todo('createAccount');
   describe('createAccount', () => {
-    it('should fail if user exists', () => {});
+    /**
+     * 모든걸 가짜로 하고 있는데 유저가 있다고 어떻게 할 수 있을까
+     * mock은 함수의 반환값을 속일 수 있다.
+     * createAccount 의 의존관계 반환값을 mock 한다.
+     */
+    it('should fail if user exists', async () => {
+      /**
+       * Promise의 ResolvedValue를 속인다.
+       * jest가 findOne 메서드를 가로챈 뒤 (intercept) 반환 값을 속인다.
+       */
+      usersRepository.findOne.mockResolvedValue({
+        id: 1,
+        email: 'lalalalalala',
+      });
+
+      const result = await service.createAccount({
+        email: '',
+        password: '',
+        role: 0,
+      });
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'There is a user with that email already',
+      });
+    });
   });
   it.todo('login');
   it.todo('findById');
