@@ -259,6 +259,50 @@ describe('UserService', () => {
       expect(result).toEqual({ ok: false, error: null });
     });
   });
-  it.todo('editProfile');
+  // it.todo('editProfile');
+  describe('editProfile', () => {
+    it('should change email', async () => {
+      const oldUser = {
+        email: 'bs@lod.com',
+        verified: true,
+      };
+      const editProfileArgs = {
+        userId: 1,
+        input: { email: 'bs@new.com' },
+      };
+      const newVerification = {
+        code: 'code',
+      };
+      const newUser = {
+        verified: false,
+        email: editProfileArgs.input.email,
+      };
+
+      usersRepository.findOne.mockResolvedValue(oldUser);
+      verificationsRepository.create.mockReturnValue(newVerification);
+      verificationsRepository.save.mockResolvedValue(newVerification);
+
+      const result = await service.editProfile(
+        editProfileArgs.userId,
+        editProfileArgs.input,
+      );
+
+      expect(usersRepository.findOne).toBeCalledTimes(1);
+      expect(usersRepository.findOne).toBeCalledWith({
+        where: { id: editProfileArgs.userId },
+      });
+
+      expect(verificationsRepository.create).toBeCalledWith({
+        user: newUser,
+      });
+      expect(verificationsRepository.save).toBeCalledWith(newVerification);
+
+      expect(mailService.sendVerificationEmail).toBeCalledWith(
+        newUser.email,
+        newVerification.code,
+      );
+    });
+  });
+
   it.todo('verifyEmail');
 });
