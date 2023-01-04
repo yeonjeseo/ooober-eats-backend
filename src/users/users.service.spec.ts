@@ -18,14 +18,14 @@ const mockRepository = () => ({
   create: jest.fn(),
 });
 
-const mockJwtService = {
+const mockJwtService = () => ({
   sign: jest.fn(() => 'lalalalala'),
   verify: jest.fn(),
-};
+});
 
-const mockMailService = {
+const mockMailService = () => ({
   sendVerificationEmail: jest.fn(),
-};
+});
 
 /**
  * User Repository 의 모든 메서드를 jest.Mock 타입으로 처리하기 위한 Partial type
@@ -61,11 +61,11 @@ describe('UserService', () => {
         },
         {
           provide: JwtService,
-          useValue: mockJwtService,
+          useValue: mockJwtService(),
         },
         {
           provide: MailService,
-          useValue: mockMailService,
+          useValue: mockMailService(),
         },
       ],
     }).compile();
@@ -297,6 +297,7 @@ describe('UserService', () => {
       });
       expect(verificationsRepository.save).toBeCalledWith(newVerification);
 
+      expect(mailService.sendVerificationEmail).toBeCalledTimes(1);
       expect(mailService.sendVerificationEmail).toBeCalledWith(
         newUser.email,
         newVerification.code,
