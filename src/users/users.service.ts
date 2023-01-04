@@ -150,7 +150,7 @@ export class UsersService {
         ok: true,
       };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: 'Could not update profile.' };
     }
   }
 
