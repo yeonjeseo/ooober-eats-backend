@@ -37,7 +37,7 @@ export class MailService {
     emailVars.forEach((eVars) => form.append(`v:${eVars.key}`, eVars.value));
 
     try {
-      const response = await got.post(
+      await got.post(
         `https://api.mailgun.net/v3/${this.options.emailDomain}/messages`,
         {
           headers: {
