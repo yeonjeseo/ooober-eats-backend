@@ -55,14 +55,12 @@ export class UsersService {
           user,
         }),
       );
-
       this.mailService.sendVerificationEmail(user.email, verification.code);
 
       return {
         ok: true,
       };
     } catch (e) {
-      console.log(e);
       return {
         ok: false,
         error: "Couldn't created account",
@@ -97,9 +95,11 @@ export class UsersService {
        * users.module
        *
        */
+      const token = this.jwtService.sign(user.id);
+
       return {
         ok: true,
-        token: this.jwtService.sign(user.id),
+        token,
       };
     } catch (e) {
       return {
@@ -111,14 +111,13 @@ export class UsersService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const user = await this.users.findOne({ where: { id } });
-      if (!user) throw Error();
+      // findOneOrFail: TypeORM 에서 제공. 레코드 없을 경우 throw
+      const user = await this.users.findOneOrFail({ where: { id } });
       return {
         ok: Boolean(user),
         user,
       };
     } catch (error) {
-      console.log(error);
       return {
         ok: false,
         error,
@@ -148,7 +147,7 @@ export class UsersService {
         ok: true,
       };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: 'Could not update profile.' };
     }
   }
 
@@ -158,7 +157,12 @@ export class UsersService {
         where: { code },
         relations: ['user'],
       });
-      if (!verification) throw Error();
+
+      if (!verification)
+        return {
+          ok: false,
+          error: 'Verification not found!',
+        };
 
       verification.user.verified = true;
       await this.users.save(verification.user);
@@ -166,7 +170,7 @@ export class UsersService {
 
       return { ok: true };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: 'Could not verify email.' };
     }
   }
 }

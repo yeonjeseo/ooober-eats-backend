@@ -19,12 +19,12 @@ export class MailService {
 	-F subject='Hello' \
 	-F text='Testing some Mailgun awesomeness!'
    */
-  private async sendEmail(
+  async sendEmail(
     subject: string,
     to: string,
     template: string,
     emailVars: EmailVar[],
-  ) {
+  ): Promise<boolean> {
     const form = new FormData();
 
     form.append(
@@ -37,10 +37,9 @@ export class MailService {
     emailVars.forEach((eVars) => form.append(`v:${eVars.key}`, eVars.value));
 
     try {
-      const response = await got(
+      const response = await got.post(
         `https://api.mailgun.net/v3/${this.options.emailDomain}/messages`,
         {
-          method: 'POST',
           headers: {
             Authorization: `Basic ${Buffer.from(
               `api:${this.options.apiKey}`,
@@ -49,8 +48,10 @@ export class MailService {
           body: form,
         },
       );
+      return true;
     } catch (e) {
       console.log(e);
+      return false;
     }
   }
 
