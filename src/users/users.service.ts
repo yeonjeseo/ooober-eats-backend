@@ -120,7 +120,7 @@ export class UsersService {
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: 'User not found',
       };
     }
   }

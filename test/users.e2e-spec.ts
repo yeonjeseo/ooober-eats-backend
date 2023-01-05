@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from './../src/app.module';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import * as request from 'supertest';
+import { User } from '../src/users/entities/users.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 // jest.mock('got', () => ({
 //   post: jest.fn,
@@ -20,6 +22,8 @@ const testUser = {
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
   let jwtToken: string;
+  let usersRepository: Repository<User>;
+
   /**
    * AppModule 전체를 import
    */
@@ -29,6 +33,7 @@ describe('UserModule (e2e)', () => {
     }).compile();
 
     app = module.createNestApplication();
+    usersRepository = module.get<Repository<User>>(getRepositoryToken(User));
     await app.init();
   });
   afterAll(async () => {
@@ -163,8 +168,134 @@ describe('UserModule (e2e)', () => {
         }));
   });
 
-  it.todo('userProfile');
-  it.todo('me');
+  describe('userProfile', () => {
+    let userId: number;
+    beforeAll(async () => {
+      const [user] = await usersRepository.find();
+      userId = user.id;
+    });
+
+    it("should see a user's profile", () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `
+          {
+            userProfile(userId: ${userId}) {
+                ok
+                error
+                user {
+                  id
+                }
+              }
+            }
+        `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                userProfile: {
+                  ok,
+                  error,
+                  user: { id },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toBe(true);
+          expect(error).toBe(null);
+          expect(id).toBe(userId);
+        });
+    });
+
+    it('should not find a profile', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `
+          {
+            userProfile(userId: 123123) {
+                ok
+                error
+                user {
+                  id
+                }
+              }
+            }
+        `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                userProfile: { ok, error, user },
+              },
+            },
+          } = res;
+          // console.log(res.body);
+          expect(ok).toBe(false);
+          expect(error).toBe('User not found');
+          expect(user).toBe(null);
+        });
+    });
+  });
+
+  describe('me', () => {
+    it('should find my profile', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `{
+                    me {
+                      email
+                    }
+                  }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { email },
+              },
+            },
+          } = res;
+          expect(email).toBe(testUser.email);
+        });
+    });
+
+    it('should not allow logged out user', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+          {
+            userProfile(userId: 123123) {
+                ok
+                error
+                user {
+                  id
+                }
+              }
+            }
+        `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: { errors, data },
+          } = res;
+          const [error] = errors;
+          expect(error.message).toBe('Forbidden resource');
+        });
+    });
+  });
   it.todo('verifyEmail');
   it.todo('editProfile');
 });
