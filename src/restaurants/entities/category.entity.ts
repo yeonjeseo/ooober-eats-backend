@@ -27,15 +27,20 @@ import { Restaurant } from './restaurant.entity';
 @Entity()
 export class Category extends CoreEntity {
   @Field((is) => String)
-  @Column()
+  @Column({ unique: true })
   @IsString()
   @Length(5)
   name: string;
 
   @Field((type) => String)
-  @Column()
+  @Column({ nullable: true })
   @IsString()
   coverImg: string;
+
+  @Field((type) => String)
+  @Column({ unique: true })
+  @IsString()
+  slug: string;
 
   /**
    * 하나의 카테고리는 여러 식당을 가질 수 있음
