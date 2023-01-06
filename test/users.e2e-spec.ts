@@ -296,6 +296,8 @@ describe('UserModule (e2e)', () => {
         });
     });
   });
+
+  describe('editProfile', () => {});
+
   it.todo('verifyEmail');
-  it.todo('editProfile');
 });

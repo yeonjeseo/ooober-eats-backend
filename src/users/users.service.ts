@@ -8,7 +8,6 @@ import {
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 // import * as bcrypt from 'bcrypt'
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
@@ -130,6 +129,18 @@ export class UsersService {
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
     try {
+      // check if email already exists
+      const emailTaken = await this.users.findOne({
+        where: {
+          email,
+        },
+      });
+      if (email)
+        return {
+          ok: false,
+          error: 'Email already taken!',
+        };
+
       // return this.users.update({ id: userId }, { ...editProfileInput });
       const user = await this.users.findOne({ where: { id: userId } });
       if (email) {
