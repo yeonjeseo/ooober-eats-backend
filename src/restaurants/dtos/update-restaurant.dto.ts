@@ -1,5 +1,5 @@
 import { ArgsType, Field, InputType, PartialType } from '@nestjs/graphql';
-import { Restaurant } from '../entities/restanrant.entity';
+import { Restaurant } from '../entities/restaurant.entity';
 
 @InputType()
 class UpdateRestaurantInputType extends PartialType(Restaurant) {}

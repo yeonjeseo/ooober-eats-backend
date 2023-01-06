@@ -1,5 +1,5 @@
 import { InputType, OmitType } from '@nestjs/graphql';
-import { Restaurant } from '../entities/restanrant.entity';
+import { Restaurant } from '../entities/restaurant.entity';
 
 /**
  * InputType은 alias가 필수임 대신 argsType을 사용하면 별ㅊ핑 없이 입력 받을 수 있음

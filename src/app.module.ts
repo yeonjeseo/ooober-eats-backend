@@ -16,6 +16,9 @@ import { jwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
+import { Restaurant } from './restaurants/entities/restaurant.entity';
+import { Category } from './restaurants/entities/category.entity';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 
 /**
  * forRoot?
@@ -59,16 +62,17 @@ import { MailModule } from './mail/mail.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User, Verification],
+      entities: [User, Verification, Restaurant, Category],
       synchronize: process.env.NODE_ENV !== 'prod', // DB를 현재 모듈 상태로 동기화
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
     }),
-    UsersModule,
     JwtModule.forRoot({
       privateKey: process.env.JWT_SECRET,
     }),
     AuthModule,
+    UsersModule,
+    RestaurantsModule,
     MailModule.forRoot({
       apiKey: process.env.MAILGUN_API_KEY,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,

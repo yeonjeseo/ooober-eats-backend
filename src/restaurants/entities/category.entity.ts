@@ -4,8 +4,10 @@
  */
 
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
+import { CoreEntity } from '../../common/entities/core.entity';
+import { Restaurant } from './restaurant.entity';
 
 /**
  * Most of the definitions in a GraphQL schema are object types.
@@ -20,40 +22,25 @@ import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 /**
  * Mappped Types - 베이스 타입을 바탕으로 다른 버전을 만들 수 있다.
  */
-@InputType({ isAbstract: true })
+@InputType('CategoryInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
-export class Restaurant {
-  @PrimaryGeneratedColumn()
-  @Field((is) => Number)
-  id: number;
-
+export class Category extends CoreEntity {
   @Field((is) => String)
   @Column()
   @IsString()
   @Length(5)
   name: string;
 
-  // 각각의 데코레이터가 알아먹을 수 있도록 적절한 옵션 추가해서 Default value 설정
-  // graphql -> Nullable, defaultValue
-  @Field((is) => Boolean, { nullable: true })
-  @Column({ default: true })
-  @IsBoolean()
-  @IsOptional()
-  isVegan: boolean;
-
-  @Field((type) => String, { defaultValue: '경북 문경시 모전동 신원아침도시' })
-  @Column()
-  @IsString()
-  address: string;
-
   @Field((type) => String)
   @Column()
   @IsString()
-  ownersName: string;
+  coverImg: string;
 
-  @Field((is) => String)
-  @Column()
-  @IsString()
-  categoryName: string;
+  /**
+   * 하나의 카테고리는 여러 식당을 가질 수 있음
+   */
+  @Field((type) => [Restaurant]) // Graphql notation
+  @OneToMany((type) => Restaurant, (restaurant) => restaurant.category)
+  restaurants: Restaurant[];
 }
