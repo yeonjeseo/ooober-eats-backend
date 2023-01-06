@@ -4,8 +4,11 @@
  */
 
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
+import { CoreEntity } from '../../common/entities/core.entity';
+import { Category } from './category.entity';
+import { User } from '../../users/entities/users.entity';
 
 /**
  * Most of the definitions in a GraphQL schema are object types.
@@ -20,14 +23,10 @@ import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 /**
  * Mappped Types - 베이스 타입을 바탕으로 다른 버전을 만들 수 있다.
  */
-@InputType({ isAbstract: true })
+@InputType('RestaurantInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
-export class Restaurant {
-  @PrimaryGeneratedColumn()
-  @Field((is) => Number)
-  id: number;
-
+export class Restaurant extends CoreEntity {
   @Field((is) => String)
   @Column()
   @IsString()
@@ -36,24 +35,33 @@ export class Restaurant {
 
   // 각각의 데코레이터가 알아먹을 수 있도록 적절한 옵션 추가해서 Default value 설정
   // graphql -> Nullable, defaultValue
-  @Field((is) => Boolean, { nullable: true })
-  @Column({ default: true })
-  @IsBoolean()
-  @IsOptional()
-  isVegan: boolean;
+  // @Field((is) => Boolean, { nullable: true })
+  // @Column({ default: true })
+  // @IsBoolean()
+  // @IsOptional()
+  // isVegan: boolean;
+
+  @Field((type) => String)
+  @Column()
+  @IsString()
+  coverImg: string;
 
   @Field((type) => String, { defaultValue: '경북 문경시 모전동 신원아침도시' })
   @Column()
   @IsString()
   address: string;
 
-  @Field((type) => String)
-  @Column()
-  @IsString()
-  ownersName: string;
+  @Field((type) => Category, { nullable: true })
+  @ManyToOne((type) => Category, (category) => category.restaurants, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  category: Category;
 
-  @Field((is) => String)
-  @Column()
-  @IsString()
-  categoryName: string;
+  /**
+   * 식당은 항상 주인이 있어야
+   */
+  @Field((type) => User)
+  @ManyToOne((type) => User, (user) => user.restaurants)
+  owner: User;
 }
