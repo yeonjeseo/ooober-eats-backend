@@ -19,6 +19,8 @@ import { MailModule } from './mail/mail.module';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { Category } from './restaurants/entities/category.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { TypeOrmExModule } from './restaurants/repositories/typeorm-ex.module';
+import { CategoryRepository } from './restaurants/repositories/category.repository';
 
 /**
  * forRoot?
@@ -67,12 +69,14 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
     }),
+    TypeOrmExModule.forCustomRepository([CategoryRepository]),
     JwtModule.forRoot({
       privateKey: process.env.JWT_SECRET,
     }),
     AuthModule,
     UsersModule,
     RestaurantsModule,
+    AuthModule,
     MailModule.forRoot({
       apiKey: process.env.MAILGUN_API_KEY,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
@@ -92,3 +96,9 @@ export class AppModule implements NestModule {
     });
   }
 }
+
+/*
+{
+	"x-jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjczMjM1OTU5fQ.nGFXD1muvjyLsjD8AV_kZflj9oJVrg6D1MDD1vv0usg"
+}
+ */

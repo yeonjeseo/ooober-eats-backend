@@ -2,6 +2,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { JwtService } from './jwt.service';
 import { UsersService } from '../users/users.service';
+import { User } from '../users/entities/users.entity';
 
 // implements는 extends랑 다름
 // export class JwtMiddleware implements NestMiddleware {
@@ -29,7 +30,7 @@ export class jwtMiddleware implements NestMiddleware {
 
         if (typeof decoded === 'object' && decoded.hasOwnProperty('id')) {
           const { user } = await this.usersService.findById(decoded['id']);
-          req['user'] = user;
+          req['user'] = user as User;
         }
       } catch (e) {}
     }
