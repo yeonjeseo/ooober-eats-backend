@@ -17,6 +17,7 @@ import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -116,6 +117,21 @@ export class RestaurantService {
     } catch (e) {
       console.log(e);
       return { ok: false, error: 'Could not delete Restaurant' };
+    }
+  }
+
+  async allCategories(): Promise<AllCategoriesOutput> {
+    try {
+      const categories = await this.categories.find();
+      return {
+        ok: true,
+        categories,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: 'Could not read all categories',
+      };
     }
   }
 }
