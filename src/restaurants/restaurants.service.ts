@@ -22,7 +22,8 @@ export class RestaurantService {
   constructor(
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
-    @InjectRepository(Category)
+    // module 에서 imports [] typeorm forFeature 에 있는 배열 entity 요소를 읽어오는 것 같다.
+    // @InjectRepository(Category)
     private readonly categories: CategoryRepository,
   ) {}
 
@@ -68,12 +69,28 @@ export class RestaurantService {
         where: { id: editRestaurantInput.restaurantId },
         loadRelationIds: true,
       });
+
       if (!restaurant) return { ok: false, error: 'Restaurant Not Found!' };
       if (owner.id !== restaurant.ownerId)
         return {
           ok: false,
           error: "You can't edit a restaurant that you don't own",
         };
+
+      let category: Category = null;
+      if (editRestaurantInput.categoryName)
+        category = await this.categories.getOrCreate(
+          editRestaurantInput.categoryName,
+        );
+
+      // 전개연산자로 entity 구성 빠르게
+      await this.restaurants.save([
+        {
+          id: editRestaurantInput.restaurantId,
+          ...editRestaurantInput,
+          ...(category && { category }),
+        },
+      ]);
 
       return { ok: true };
     } catch (e) {
