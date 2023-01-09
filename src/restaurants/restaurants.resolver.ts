@@ -5,8 +5,9 @@ import {
   CreateRestaurantOutput,
 } from './dtos/create-restaurant.dto';
 import { RestaurantService } from './restaurants.service';
-import { User } from '../users/entities/users.entity';
+import { User, UserRole } from '../users/entities/users.entity';
 import { AuthUser } from '../auth/auth-user.decorator';
+import { Role } from '../auth/role.decorator';
 
 @Resolver((of) => Restaurant)
 export class RestaurantResolver {
@@ -24,6 +25,7 @@ export class RestaurantResolver {
    * graphql schema 와 typescript 에서  배열 리턴 표현 방법이 다름
    */
   @Mutation((returns) => CreateRestaurantOutput)
+  @Role(['Owner'])
   async createRestaurant(
     @AuthUser() authUser: User,
     @Args('input') createRestaurantInput: CreateRestaurantInputType,

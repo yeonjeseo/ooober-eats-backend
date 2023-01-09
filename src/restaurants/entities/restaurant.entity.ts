@@ -62,6 +62,8 @@ export class Restaurant extends CoreEntity {
    * 식당은 항상 주인이 있어야
    */
   @Field((type) => User)
-  @ManyToOne((type) => User, (user) => user.restaurants)
+  @ManyToOne((type) => User, (user) => user.restaurants, {
+    onDelete: 'CASCADE',
+  })
   owner: User;
 }
