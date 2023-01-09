@@ -3,7 +3,7 @@ import { CoreOutput } from './output.dto';
 
 @InputType()
 export class PaginationInput {
-  @Field((type) => Int, { defaultValue: 1 })
+  @Field((type) => Number, { defaultValue: 1 })
   page: number;
 }
 
