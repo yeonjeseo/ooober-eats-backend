@@ -18,6 +18,7 @@ import {
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
+import { CategoryOutput } from './dtos/category.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -143,5 +144,19 @@ export class RestaurantService {
         },
       },
     });
+  }
+
+  async findCategoryBySlug(slug: string): Promise<CategoryOutput> {
+    try {
+      const category = await this.categories.findOne({
+        where: { slug },
+        relations: ['restaurants'],
+      });
+      if (!category) return { ok: false, error: 'Category not found' };
+      console.log(category);
+      return { ok: true, category };
+    } catch (e) {
+      return { ok: false, error: 'Could not find Category' };
+    }
   }
 }
