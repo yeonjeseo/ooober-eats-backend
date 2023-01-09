@@ -12,6 +12,7 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import { CategoryRepository } from './repositories/category.repository';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -22,7 +23,7 @@ export class RestaurantService {
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
     @InjectRepository(Category)
-    private readonly categories: Repository<Category>,
+    private readonly categories: CategoryRepository,
   ) {}
 
   async createRestaurant(
@@ -34,18 +35,12 @@ export class RestaurantService {
        * categoryName 에 slug 를 만든다?
        * case-insensitive, whitespaces
        */
-      const categoryName = createRestaurantInput.categoryName
-        .trim()
-        .toLowerCase();
-      const categorySlug = categoryName.replace(/ /g, '-');
-      let category = await this.categories.findOne({
-        where: { name: categoryName },
-      });
-      if (!category)
-        category = await this.categories.save(
-          this.categories.create({ slug: categorySlug, name: categoryName }),
-        );
+
       // 여기서의 restaurants.create() DB에 레코드를 저장하지 않고 Nodejs 메모리에 임시 적재하는 클래스 인스턴스임. db에 저장하고 싶다면 .save() 메서드를 써야 함.
+      const category = await this.categories.getOrCreate(
+        createRestaurantInput.categoryName,
+      );
+
       const newRestaurant = this.restaurants.create(createRestaurantInput);
       newRestaurant.owner = owner;
       newRestaurant.category = category;
@@ -68,6 +63,22 @@ export class RestaurantService {
     owner: User,
     editRestaurantInput: EditRestaurantInput,
   ): Promise<EditRestaurantOutput> {
-    return { ok: true };
+    try {
+      const restaurant = await this.restaurants.findOne({
+        where: { id: editRestaurantInput.restaurantId },
+        loadRelationIds: true,
+      });
+      if (!restaurant) return { ok: false, error: 'Restaurant Not Found!' };
+      if (owner.id !== restaurant.ownerId)
+        return {
+          ok: false,
+          error: "You can't edit a restaurant that you don't own",
+        };
+
+      return { ok: true };
+    } catch (e) {
+      console.log(e);
+      return { ok: false, error: 'Could not edit Restaurant' };
+    }
   }
 }
