@@ -18,7 +18,7 @@ import {
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
-import { CategoryOutput } from './dtos/category.dto';
+import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -146,15 +146,33 @@ export class RestaurantService {
     });
   }
 
-  async findCategoryBySlug(slug: string): Promise<CategoryOutput> {
+  async findCategoryBySlug({
+    slug,
+    page,
+  }: CategoryInput): Promise<CategoryOutput> {
     try {
-      const category = await this.categories.findOne({
-        where: { slug },
-        relations: ['restaurants'],
-      });
+      // 바로 조인해서 페이지네이션 없이 보내주면 DB 뻗을 수 있음
+      // const category = await this.categories.findOne({
+      //   where: { slug },
+      //   relations: ['restaurants'],
+      // });
+
+      const category = await this.categories.findOne({ where: { slug } });
+
       if (!category) return { ok: false, error: 'Category not found' };
-      console.log(category);
-      return { ok: true, category };
+
+      const restaurants = await this.restaurants.find({
+        where: {
+          category: {
+            id: category.id,
+          },
+        },
+        take: 5,
+        skip: (page - 1) * 5,
+      });
+      const totalResults = await this.countRestaurantsByCategory(category);
+      console.log(restaurants);
+      return { ok: true, restaurants, totalPages: Math.ceil(totalResults / 5) };
     } catch (e) {
       return { ok: false, error: 'Could not find Category' };
     }
