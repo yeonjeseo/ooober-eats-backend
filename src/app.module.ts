@@ -73,6 +73,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
     AuthModule,
     UsersModule,
     RestaurantsModule,
+    AuthModule,
     MailModule.forRoot({
       apiKey: process.env.MAILGUN_API_KEY,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
@@ -92,3 +93,9 @@ export class AppModule implements NestModule {
     });
   }
 }
+
+/*
+{
+	"x-jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjczMjM1OTU5fQ.nGFXD1muvjyLsjD8AV_kZflj9oJVrg6D1MDD1vv0usg"
+}
+ */
