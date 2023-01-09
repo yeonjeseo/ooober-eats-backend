@@ -8,6 +8,10 @@ import {
 } from './dtos/create-restaurant.dto';
 import { User } from '../users/entities/users.entity';
 import { Category } from './entities/category.entity';
+import {
+  EditRestaurantInput,
+  EditRestaurantOutput,
+} from './dtos/edit-restaurant.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -58,5 +62,12 @@ export class RestaurantService {
       console.log(e);
       return { ok: false, error: 'Could not create restaurant' };
     }
+  }
+
+  async editRestaurant(
+    owner: User,
+    editRestaurantInput: EditRestaurantInput,
+  ): Promise<EditRestaurantOutput> {
+    return { ok: true };
   }
 }
