@@ -19,13 +19,13 @@ export class AuthGuard implements CanActivate {
       'roles',
       context.getHandler(),
     );
-    if (!roles) return true;
+    if (!roles) return true; // metadata 에 role 이 없다 - public
     const gqlContext = GqlExecutionContext.create(context).getContext();
     const user: User = gqlContext.user;
-    if (!user) return false;
-    if (roles.includes('Any')) return true;
+    if (!user) return false; // metadata 에 role 이 있는데, user 가 없다? - Not allowed
+    if (roles.includes('Any')) return true; // metadata 가 any 이다 - 모든 권한에 대해 api 허용
 
-    return roles.includes(user.role);
+    return roles.includes(user.role); // metadata 권한 리스트에 있는 역할들과 현재 user 의 역할 비교
   }
 }
 
