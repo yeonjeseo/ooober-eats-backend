@@ -1,4 +1,11 @@
-import { Resolver, Query, Args, Mutation, ResolveField } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Args,
+  Mutation,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { Restaurant } from './entities/restaurant.entity';
 import {
   CreateRestaurantInputType,
@@ -74,10 +81,11 @@ export class CategoryResolver {
 
   /**
    * 매 request 마다 계산된 field 를 만들어줌 (dynamic field)
+   * 부모 args, 표준 graphql resolver args 에 접근 가능함.
    */
   @ResolveField((type) => Number)
-  restaurantCount(): number {
-    return 80;
+  restaurantCount(@Parent() category: Category): Promise<number> {
+    return this.restaurantService.countRestaurantsByCategory(category);
   }
   @Query((type) => AllCategoriesOutput)
   allCategories(): Promise<AllCategoriesOutput> {
