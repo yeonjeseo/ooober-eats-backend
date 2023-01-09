@@ -13,6 +13,10 @@ import {
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
 import { CategoryRepository } from './repositories/category.repository';
+import {
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput,
+} from './dtos/delete-restaurant.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -96,6 +100,22 @@ export class RestaurantService {
     } catch (e) {
       console.log(e);
       return { ok: false, error: 'Could not edit Restaurant' };
+    }
+  }
+
+  async deleteRestaurant(
+    owner: User,
+    deleteRestaurantInput: DeleteRestaurantInput,
+  ): Promise<DeleteRestaurantOutput> {
+    try {
+      await this.restaurants.delete({
+        id: deleteRestaurantInput.restaurantId,
+      });
+
+      return { ok: true };
+    } catch (e) {
+      console.log(e);
+      return { ok: false, error: 'Could not delete Restaurant' };
     }
   }
 }
