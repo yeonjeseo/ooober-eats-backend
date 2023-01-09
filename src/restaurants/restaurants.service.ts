@@ -19,6 +19,7 @@ import {
 } from './dtos/delete-restaurant.dto';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
+import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -175,6 +176,28 @@ export class RestaurantService {
       return { ok: true, restaurants, totalPages: Math.ceil(totalResults / 5) };
     } catch (e) {
       return { ok: false, error: 'Could not find Category' };
+    }
+  }
+  async allRestaurants(
+    restaurantsInput: RestaurantsInput,
+  ): Promise<RestaurantsOutput> {
+    try {
+      const [results, totalCount] = await this.restaurants.findAndCount({
+        take: 5,
+        skip: (restaurantsInput.page - 1) * 5,
+      });
+      return {
+        ok: true,
+        results,
+        totalCount,
+        totalPages: Math.ceil(totalCount / 5),
+      };
+    } catch (e) {
+      console.log(e);
+      return {
+        ok: false,
+        error: 'Could not get restaurants list',
+      };
     }
   }
 }
