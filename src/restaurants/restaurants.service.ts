@@ -25,6 +25,7 @@ import {
   SearchRestaurantInput,
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
+import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -214,6 +215,7 @@ export class RestaurantService {
         where: {
           id: restaurantId,
         },
+        relations: ['menu'],
       });
       return { ok: true, restaurant };
     } catch (e) {
@@ -253,6 +255,18 @@ export class RestaurantService {
       };
     } catch (e) {
       return { ok: false, error: 'Could not find restaurant by name' };
+    }
+  }
+
+  async createDish(
+    owner,
+    createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    try {
+      return { ok: true };
+    } catch (e) {
+      console.log(e);
+      return { ok: false, error: 'Could not create dish' };
     }
   }
 }
