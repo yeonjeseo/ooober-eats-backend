@@ -26,6 +26,7 @@ import {
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
+import { Dish } from './entities/dish.entity';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -38,6 +39,9 @@ export class RestaurantService {
     // module 에서 imports [] typeorm forFeature 에 있는 배열 entity 요소를 읽어오는 것 같다.
     // @InjectRepository(Category)
     private readonly categories: CategoryRepository,
+
+    @InjectRepository(Dish)
+    private readonly dishes: Repository<Dish>,
   ) {}
 
   async createRestaurant(
@@ -258,11 +262,27 @@ export class RestaurantService {
     }
   }
 
+  /**
+   * 1. 식당을 찾는다
+   * 2. 주인 검증
+   * 3. json 준비
+   * 4. 식당 Id에 해당하는 음식 생성
+   */
   async createDish(
     owner,
     createDishInput: CreateDishInput,
   ): Promise<CreateDishOutput> {
     try {
+      const restaurant = await this.restaurants.findOne({
+        where: { id: createDishInput.restaurantId, owner: { id: owner.id } },
+      });
+      if (!restaurant) return { ok: false, error: 'Could not find restaurant' };
+      const dish = await this.dishes.save(
+        this.dishes.create({
+          ...createDishInput,
+          restaurant,
+        }),
+      );
       return { ok: true };
     } catch (e) {
       console.log(e);
