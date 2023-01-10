@@ -8,6 +8,7 @@ import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   RelationId,
 } from 'typeorm';
@@ -15,6 +16,7 @@ import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 import { CoreEntity } from '../../common/entities/core.entity';
 import { Category } from './category.entity';
 import { User } from '../../users/entities/users.entity';
+import { Dish } from './dish.entity';
 
 /**
  * Most of the definitions in a GraphQL schema are object types.
@@ -75,4 +77,8 @@ export class Restaurant extends CoreEntity {
 
   @RelationId((restaurant: Restaurant) => restaurant.owner)
   ownerId: number;
+
+  @Field((type) => [Dish])
+  @OneToMany((type) => Dish, (dish) => dish.restaurant)
+  menu: Dish[];
 }

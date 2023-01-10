@@ -21,6 +21,7 @@ import { Category } from './restaurants/entities/category.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { TypeOrmExModule } from './restaurants/repositories/typeorm-ex.module';
 import { CategoryRepository } from './restaurants/repositories/category.repository';
+import { Dish } from './restaurants/entities/dish.entity';
 
 /**
  * forRoot?
@@ -64,7 +65,7 @@ import { CategoryRepository } from './restaurants/repositories/category.reposito
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User, Verification, Restaurant, Category],
+      entities: [User, Verification, Restaurant, Category, Dish],
       synchronize: process.env.NODE_ENV !== 'prod', // DB를 현재 모듈 상태로 동기화
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
