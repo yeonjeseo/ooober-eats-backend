@@ -27,6 +27,8 @@ import {
 } from './dtos/search-restaurant.dto';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { Dish } from './entities/dish.entity';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 
 /**
  * RrestaurantService 를 RestaurantResolvers 에 Inject
@@ -287,6 +289,51 @@ export class RestaurantService {
     } catch (e) {
       console.log(e);
       return { ok: false, error: 'Could not create dish' };
+    }
+  }
+
+  async editDish(
+    owner: User,
+    editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    try {
+    } catch (e) {
+      console.log(e);
+      return { ok: false, error: 'Could not edit dish' };
+    }
+  }
+
+  async deleteDish(
+    owner: User,
+    deleteDishInput: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    try {
+      const dish = await this.dishes.findOne({
+        where: {
+          id: deleteDishInput.dishId,
+          restaurant: {
+            owner: {
+              id: owner.id,
+            },
+          },
+        },
+        relations: ['restaurant'],
+      });
+
+      if (!dish)
+        return {
+          ok: false,
+          error: 'Could not find dish',
+        };
+
+      await this.dishes.delete({
+        id: deleteDishInput.dishId,
+      });
+
+      return { ok: true };
+    } catch (e) {
+      console.log(e);
+      return { ok: false, error: 'Could not delete dish' };
     }
   }
 }
