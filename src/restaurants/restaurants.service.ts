@@ -297,6 +297,25 @@ export class RestaurantService {
     editDishInput: EditDishInput,
   ): Promise<EditDishOutput> {
     try {
+      const dish = await this.dishes.findOne({
+        where: {
+          id: editDishInput.dishId,
+        },
+        relations: ['restaurant'],
+      });
+
+      if(!dish) return { ok: false, error: 'Dish not found' };
+      // check authority
+      if(dish.restaurant.ownerId !== owner.id) return { ok: false, error: 'You are not allowed to edit this dish' };
+
+      await this.dishes.save([{
+        id: editDishInput.dishId,
+        ...editDishInput
+      }]);
+
+      return {
+        ok: true,
+      }
     } catch (e) {
       console.log(e);
       return { ok: false, error: 'Could not edit dish' };
@@ -305,12 +324,12 @@ export class RestaurantService {
 
   async deleteDish(
     owner: User,
-    deleteDishInput: DeleteDishInput,
+    { dishId }: DeleteDishInput,
   ): Promise<DeleteDishOutput> {
     try {
       const dish = await this.dishes.findOne({
         where: {
-          id: deleteDishInput.dishId,
+          id: dishId,
           restaurant: {
             owner: {
               id: owner.id,
@@ -323,11 +342,19 @@ export class RestaurantService {
       if (!dish)
         return {
           ok: false,
-          error: 'Could not find dish',
+          error: 'Dish not found',
         };
 
+      // check authority
+      // if (dish.restaurant.ownerId !== owner.id) {
+      //         return {
+      //           ok: false,
+      //           error: 'You are not allowed to delete this dish',
+      //         };
+      // }
+
       await this.dishes.delete({
-        id: deleteDishInput.dishId,
+        id: dishId,
       });
 
       return { ok: true };
