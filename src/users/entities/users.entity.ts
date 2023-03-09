@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 export enum UserRole {
   Owner = 'Owner',
@@ -46,6 +47,14 @@ export class User extends CoreEntity {
   @Field((type) => [Restaurant]) // Graphql notation
   @OneToMany((type) => Restaurant, (restaurant) => restaurant.owner)
   restaurants: Restaurant[];
+
+  @Field((type) => [Order])
+  @OneToMany((type) => Order, (order) => order.customer)
+  orders: Order[];
+
+  @Field((type) => [Order])
+  @OneToMany((type) => Order, (order) => order.driver)
+  rides: Order[];
   /**
    * Entity Listener
    * "특정 Entity event 를 Listen 하는 사용자 로직이 있는 method 를 가질 수 있다.

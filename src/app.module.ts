@@ -22,6 +22,8 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { TypeOrmExModule } from './restaurants/repositories/typeorm-ex.module';
 import { CategoryRepository } from './restaurants/repositories/category.repository';
 import { Dish } from './restaurants/entities/dish.entity';
+import { OrdersModule } from './orders/orders.module';
+import { Order } from './orders/entities/order.entity';
 
 /**
  * forRoot?
@@ -65,7 +67,7 @@ import { Dish } from './restaurants/entities/dish.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User, Verification, Restaurant, Category, Dish],
+      entities: [User, Verification, Restaurant, Category, Dish, Order],
       synchronize: process.env.NODE_ENV !== 'prod', // DB를 현재 모듈 상태로 동기화
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
@@ -83,6 +85,7 @@ import { Dish } from './restaurants/entities/dish.entity';
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
       emailDomain: process.env.MAILGUN_URL,
     }),
+    OrdersModule,
   ],
   controllers: [],
   providers: [],

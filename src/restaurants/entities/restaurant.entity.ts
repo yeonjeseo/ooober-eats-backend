@@ -17,6 +17,7 @@ import { CoreEntity } from '../../common/entities/core.entity';
 import { Category } from './category.entity';
 import { User } from '../../users/entities/users.entity';
 import { Dish } from './dish.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 /**
  * Most of the definitions in a GraphQL schema are object types.
@@ -74,6 +75,10 @@ export class Restaurant extends CoreEntity {
     onDelete: 'CASCADE',
   })
   owner: User;
+
+  @Field((type) => [Order])
+  @OneToMany((type) => Order, (order) => order.restaurant)
+  orders: Order[];
 
   @RelationId((restaurant: Restaurant) => restaurant.owner)
   ownerId: number;
