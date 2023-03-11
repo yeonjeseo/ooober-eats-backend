@@ -46,8 +46,8 @@ export class Order extends CoreEntity {
   @JoinTable()
   dishes: Dish[];
 
-  @Column()
-  @Field((type) => Number)
+  @Column({ nullable: true })
+  @Field((type) => Number, { nullable: true })
   total: number;
 
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.Pending })
