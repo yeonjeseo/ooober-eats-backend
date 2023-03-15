@@ -25,6 +25,15 @@ export class OrderService {
       },
     });
 
+    const order = await this.orders.save(
+      this.orders.create({
+        customer,
+        restaurant,
+      }),
+    );
+
+    console.log(order);
+
     if (!restaurant)
       return {
         ok: false,
