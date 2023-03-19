@@ -30,8 +30,8 @@ export class OrderService {
         id: restaurantId,
       },
     });
-
-    items.forEach(async (item) => {
+    let totalPrice = 0;
+    for (const item of items) {
       const dish = await this.dishes.findOne({
         where: {
           id: item.dishId,
@@ -39,14 +39,44 @@ export class OrderService {
       });
       if (!dish) {
         // abort this whole thing
+        return {
+          ok: false,
+          error: 'Dish not found',
+        };
       }
-      await this.orderItems.save(
-        this.orderItems.create({
-          dish,
-          options: item.options,
-        }),
-      );
-    });
+      let itemPrice = dish.price;
+
+      for (const itemOption of item.options) {
+        const dishOption = dish.options.find(
+          (dishOption) => dishOption.name === itemOption.name,
+        );
+        if (!dishOption) {
+          // abort this whole thing
+          return {
+            ok: false,
+            error: 'Option not found',
+          };
+        }
+        // extra가 있다면 바로 합계,
+        // Extra가 없다면 choice 배열 한번 더 탐색
+        // 공짜도 있으므로 아무것도 없으면 0
+        const optionExtra =
+          dishOption.extra ||
+          dishOption.choices.find((choice) => choice.name === itemOption.choice)
+            .extra ||
+          0;
+        itemPrice += optionExtra;
+      }
+      // await this.orderItems.save(
+      //   this.orderItems.create({
+      //     dish,
+      //     options: item.options,
+      //   }),
+      // );
+      totalPrice += itemPrice;
+    }
+
+    console.log(totalPrice);
     // const order = await this.orders.save(
     //   this.orders.create({
     //     customer,
