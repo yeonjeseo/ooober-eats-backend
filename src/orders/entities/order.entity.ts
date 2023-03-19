@@ -8,7 +8,6 @@ import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { CoreEntity } from '../../common/entities/core.entity';
 import { User } from '../../users/entities/users.entity';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
-import { Dish } from '../../restaurants/entities/dish.entity';
 import { OrderItem } from './order-item.entity';
 import { IsEnum, IsNumber } from 'class-validator';
 
