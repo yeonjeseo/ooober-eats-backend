@@ -25,72 +25,86 @@ export class OrderService {
     customer: User,
     { restaurantId, items }: CreateOrderInput,
   ): Promise<CreateOrderOutput> {
-    const restaurant = await this.restaurants.findOne({
-      where: {
-        id: restaurantId,
-      },
-    });
-    let totalPrice = 0;
-    for (const item of items) {
-      const dish = await this.dishes.findOne({
+    try {
+      const restaurant = await this.restaurants.findOne({
         where: {
-          id: item.dishId,
+          id: restaurantId,
         },
       });
-      if (!dish) {
-        // abort this whole thing
+
+      if (!restaurant)
         return {
           ok: false,
-          error: 'Dish not found',
+          error: 'Restaurant not found!',
         };
-      }
-      let itemPrice = dish.price;
 
-      for (const itemOption of item.options) {
-        const dishOption = dish.options.find(
-          (dishOption) => dishOption.name === itemOption.name,
-        );
-        if (!dishOption) {
+      let orderFinalPrice = 0;
+      const orderItems: OrderItem[] = [];
+
+      for (const item of items) {
+        const dish = await this.dishes.findOne({
+          where: {
+            id: item.dishId,
+          },
+        });
+        if (!dish) {
           // abort this whole thing
           return {
             ok: false,
-            error: 'Option not found',
+            error: 'Dish not found',
           };
         }
-        // extra가 있다면 바로 합계,
-        // Extra가 없다면 choice 배열 한번 더 탐색
-        // 공짜도 있으므로 아무것도 없으면 0
-        const optionExtra =
-          dishOption.extra ||
-          dishOption.choices.find((choice) => choice.name === itemOption.choice)
-            .extra ||
-          0;
-        itemPrice += optionExtra;
+        let dishFinalPrice = dish.price;
+
+        for (const itemOption of item.options) {
+          const dishOption = dish.options.find(
+            (dishOption) => dishOption.name === itemOption.name,
+          );
+          if (!dishOption) {
+            // abort this whole thing
+            return {
+              ok: false,
+              error: 'Option not found',
+            };
+          }
+          // extra가 있다면 바로 합계,
+          // Extra가 없다면 choice 배열 한번 더 탐색
+          // 공짜도 있으므로 아무것도 없으면 0
+          const optionExtra =
+            dishOption.extra ||
+            dishOption.choices.find(
+              (choice) => choice.name === itemOption.choice,
+            ).extra ||
+            0;
+          dishFinalPrice += optionExtra;
+        }
+        const orderItem = await this.orderItems.save(
+          this.orderItems.create({
+            dish,
+            options: item.options,
+          }),
+        );
+        orderItems.push(orderItem);
+
+        orderFinalPrice += dishFinalPrice;
       }
-      // await this.orderItems.save(
-      //   this.orderItems.create({
-      //     dish,
-      //     options: item.options,
-      //   }),
-      // );
-      totalPrice += itemPrice;
-    }
+      await this.orders.save(
+        this.orders.create({
+          customer,
+          restaurant,
+          total: orderFinalPrice,
+          items: orderItems,
+        }),
+      );
 
-    console.log(totalPrice);
-    // const order = await this.orders.save(
-    //   this.orders.create({
-    //     customer,
-    //     restaurant,
-    //   }),
-    // );
-
-    if (!restaurant)
+      return {
+        ok: true,
+      };
+    } catch (e) {
       return {
         ok: false,
-        error: 'Restaurant not found!',
+        error: 'Could not create order',
       };
-    return {
-      ok: true,
-    };
+    }
   }
 }
